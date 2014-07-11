@@ -57,8 +57,7 @@ class Turtle_listens(Plugin):
                           help_string=_('Start listening'))
 
         self.tw.lc.def_prim('listens', 0,
-                            Primitive(self.listen),
-                            True)
+                            Primitive(self.listen))
 
         palette.add_block('turtle-listen-to',
                           style='boolean-1arg-block-style',

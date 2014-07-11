@@ -1,0 +1,7 @@
+#JSGF V1.0;
+
+grammar turtle;
+
+public <turtle> = <comand>;
+
+<comando> = GO FORWARD | GO BACK | TURN LEFT | TURN RIGHT;
