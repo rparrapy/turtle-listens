@@ -32,8 +32,11 @@ from TurtleArt.tatype import (TYPE_BOOL, TYPE_BOX, TYPE_CHAR, TYPE_INT,
                               TYPE_NUMBER)
 from TurtleArt.taturtle import Turtle
 from sugarlistens import helper
+from sugarlistens import utils
 import logging
 
+def after(self):
+    self.private = self.private + 1
 
 
 class Turtle_listens(Plugin):
@@ -50,14 +53,6 @@ class Turtle_listens(Plugin):
                                colors=["#FFC000", "#A08000"],
                                help_string=_('Palette for speech recognition'))
 
-        palette.add_block('turtle-listens',
-                          style='basic-style-extended-vertical',
-                          label=_('start listening'),
-                          prim_name='listens',
-                          help_string=_('Start listening'))
-
-        self.tw.lc.def_prim('listens', 0,
-                            Primitive(self.listen))
 
         palette.add_block('turtle-listen-to',
                           style='boolean-1arg-block-style',
@@ -71,14 +66,40 @@ class Turtle_listens(Plugin):
                                       arg_descs=[ArgSlot(TYPE_STRING)]))
 
 
-    def listen(self):
+    def start(self):
         self.__path = os.path.dirname(os.path.abspath(__file__))
+
+        lines = []
+        with open(self.__path + '/speech/en/language.gram.base', 'r') as myfile:
+            lines = myfile.readlines()
+
+        print lines
+
+        commands = []
+        for block in self.tw.block_list.get_similar_blocks('block', 'turtle-listen-to'):
+            commands.append(block.connections[-1].values[0].lower())
+        rule = '<comando> = ' + ' | '.join(commands) + ';\n'
+
+        lines.append(rule)
+        with open(self.__path + '/speech/en/language.gram', 'a+') as myfile:
+            for line in lines:
+                myfile.write(line)
+
+        utils.jsgf2fsg(self.__path + '/speech/en/language.gram')
+
         self.__recognizer = helper.RecognitionHelper(self.__path)
         self.__recognizer.listen(self.final_result)
         self.__recognizer.start_listening()
 
 
+    def stop(self):
+        os.remove(self.__path + '/speech/en/language.gram')
+        os.remove(self.__path + '/speech/en/language.fsg')
+        self.__recognizer.stop_listening()
+
+
     def final_result(self, text):
+        print text
         self.command = text
 
     def listen_to(self, text):
