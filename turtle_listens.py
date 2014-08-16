@@ -73,10 +73,9 @@ class Turtle_listens(Plugin):
         with open(self.__path + '/speech/en/language.gram.base', 'r') as myfile:
             lines = myfile.readlines()
 
-        print lines
-
         commands = []
         for block in self.tw.block_list.get_similar_blocks('block', 'turtle-listen-to'):
+
             commands.append(block.connections[-1].values[0].lower())
         rule = '<comando> = ' + ' | '.join(commands) + ';\n'
 
@@ -87,19 +86,23 @@ class Turtle_listens(Plugin):
 
         utils.jsgf2fsg(self.__path + '/speech/en/language.gram')
 
-        self.__recognizer = helper.RecognitionHelper(self.__path)
-        self.__recognizer.listen(self.final_result)
-        self.__recognizer.start_listening()
+        try:
+            self.__recognizer = helper.RecognitionHelper(self.__path)
+            idx = self.__recognizer.listen(self.final_result)
+            self.__recognizer.start_listening()
+        except RuntimeError:
+            self.set_colors_speech_blocks(['#A0A0A0', '#808080'])
+
 
 
     def stop(self):
+        self.set_colors_speech_blocks(["#FFC000", "#A08000"])
         os.remove(self.__path + '/speech/en/language.gram')
         os.remove(self.__path + '/speech/en/language.fsg')
         self.__recognizer.stop_listening()
 
 
     def final_result(self, text):
-        print text
         self.command = text
 
     def listen_to(self, text):
@@ -108,4 +111,8 @@ class Turtle_listens(Plugin):
             self.command = None
             flag = True
         return flag
+
+    def set_colors_speech_blocks(self, colors):
+        for block in self.tw.block_list.get_similar_blocks('block', 'turtle-listen-to'):
+            block.set_colors(colors)
 

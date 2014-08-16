@@ -2,4 +2,4 @@
 
 grammar turtle;
 
-public <turtle> = <comando>;
+public <turtle> = <comando> | (wildcard)+;
